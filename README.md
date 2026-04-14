@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Article Review System
 
-## Getting Started
+This project now runs with:
+- a Next.js UI (`/app`)
+- a standalone Node.js + Express + MongoDB backend (`/backend`)
 
-First, run the development server:
+## Setup
+
+### 1) Frontend env
+
+Copy `.env.example` to `.env` in the project root:
+
+```bash
+cp .env.example .env
+```
+
+Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+### 2) Backend env
+
+Copy `backend/.env.example` to `backend/.env` and fill values:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+Windows PowerShell:
+
+```powershell
+Copy-Item backend/.env.example backend/.env
+```
+
+Required backend env keys:
+- `PORT`
+- `MONGODB_URI`
+- `JWT_SECRET`
+- `CORS_ORIGIN`
+
+## Run
+
+Frontend:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Backend:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run backend:dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Backend seed:
 
-## Learn More
+```bash
+npm run backend:seed
+```
 
-To learn more about Next.js, take a look at the following resources:
+## API quick checks
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Health:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+curl http://localhost:4000/api/health
+```
 
-## Deploy on Vercel
+Signup:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+curl -X POST http://localhost:4000/api/auth/signup \
+  -H "Content-Type: application/json" \
+  -d "{\"email\":\"demo@example.com\",\"password\":\"password123\",\"name\":\"Demo\"}"
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Create article:
+
+```bash
+curl -X POST http://localhost:4000/api/articles \
+  -H "Content-Type: application/json" \
+  -d "{\"url\":\"https://example.com/article-1\",\"title\":\"Article 1\"}"
+```
+
+## Notes
+
+- The frontend reads data from `NEXT_PUBLIC_API_BASE_URL`.
+- Reviews write endpoints require JWT Bearer token.
+- Prisma and Next API route database path have been removed from runtime.

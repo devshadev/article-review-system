@@ -1,17 +1,27 @@
 import { AddArticleForm } from "@/app/components/add-article-form";
 
-const articles = [
-  {
-    id: "demo-1",
-    title: "Demo Article",
-    description: "UI-only mode. No database connected.",
-    url: "https://example.com",
-    source: "example.com",
-    reviews: [{ clarity: 4, depth: 4, usefulness: 5, credibility: 4 }],
-  },
-];
+type Article = {
+  id: string;
+  title: string;
+  description: string | null;
+  url: string;
+  source: string | null;
+  reviewCount: number;
+  averageRating: number | null;
+};
 
 export default async function Home() {
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:4000";
+  let articles: Article[] = [];
+
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/articles`, { cache: "no-store" });
+    articles = (response.ok ? await response.json() : []) as Article[];
+  } catch {
+    // Keep UI available even when backend is offline/unreachable.
+    articles = [];
+  }
+
   return (
     <div className="min-h-screen bg-[#ebedf0] px-6 py-10 font-sans text-slate-800">
       <main className="mx-auto flex w-full max-w-5xl flex-col gap-8">
@@ -29,17 +39,6 @@ export default async function Home() {
           <h2 className="mb-4 text-xl font-semibold">Article Feed</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {articles.map((article) => {
-              const count = article.reviews.length;
-              const average =
-                count === 0
-                  ? null
-                  : article.reviews.reduce((sum, review) => {
-                      const reviewAverage =
-                        (review.clarity + review.depth + review.usefulness + review.credibility) /
-                        4;
-                      return sum + reviewAverage;
-                    }, 0) / count;
-
               return (
                 <article
                   key={article.id}
@@ -52,7 +51,8 @@ export default async function Home() {
                   <div className="mt-4 text-sm text-slate-500">
                     <p>Source: {article.source ?? "unknown"}</p>
                     <p>
-                      Rating: {average ? average.toFixed(1) : "-"} / 5 ({count} reviews)
+                      Rating: {article.averageRating ? article.averageRating.toFixed(1) : "-"} / 5 (
+                      {article.reviewCount} reviews)
                     </p>
                   </div>
                   <a

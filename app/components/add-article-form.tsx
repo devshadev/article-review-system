@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 export function AddArticleForm() {
   const router = useRouter();
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:4000";
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -17,7 +18,7 @@ export function AddArticleForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/articles", {
+      const response = await fetch(`${apiBaseUrl}/api/articles`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
