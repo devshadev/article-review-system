@@ -1,4 +1,5 @@
-import { AddArticleForm } from "@/app/components/add-article-form";
+import Link from "next/link";
+import { ArticleCard } from "@/app/components/article-card";
 
 type Article = {
   id: string;
@@ -18,60 +19,137 @@ export default async function Home() {
     const response = await fetch(`${apiBaseUrl}/api/articles`, { cache: "no-store" });
     articles = (response.ok ? await response.json() : []) as Article[];
   } catch {
-    // Keep UI available even when backend is offline/unreachable.
     articles = [];
   }
 
   return (
-    <div className="min-h-screen bg-[#ebedf0] px-6 py-10 font-sans text-slate-800">
-      <main className="mx-auto flex w-full max-w-5xl flex-col gap-8">
-        <section className="rounded-3xl border border-slate-200 bg-[#eef1f5] p-6 shadow-[8px_8px_16px_#d1d4d8,-8px_-8px_16px_#ffffff]">
-          <h1 className="text-3xl font-semibold">AI-assisted Article Review Platform</h1>
-          <p className="mt-2 text-slate-600">
-            Add article URLs and start collecting structured reviews.
+    <div style={{ padding: "0", minHeight: "calc(100vh - 57px)" }}>
+      {/* Hero strip */}
+      <div
+        style={{
+          borderBottom: "var(--border)",
+          background: "var(--black)",
+          color: "var(--yellow)",
+          padding: "3rem 2rem",
+          display: "flex",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          gap: "2rem",
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <p
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "0.75rem",
+              opacity: 0.6,
+              marginBottom: "0.5rem",
+              letterSpacing: "0.15em",
+            }}
+          >
+            — ARTICLE REVIEW SYSTEM
           </p>
-          <div className="mt-6">
-            <AddArticleForm />
-          </div>
-        </section>
+          <h1
+            style={{
+              fontFamily: "var(--font-display)",
+              fontWeight: 900,
+              fontSize: "clamp(2rem, 5vw, 4rem)",
+              lineHeight: 1,
+              letterSpacing: "-0.03em",
+            }}
+          >
+            READ.<br />REVIEW.<br />REPEAT.
+          </h1>
+        </div>
 
-        <section>
-          <h2 className="mb-4 text-xl font-semibold">Article Feed</h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            {articles.map((article) => {
-              return (
-                <article
-                  key={article.id}
-                  className="rounded-2xl border border-slate-200 bg-[#eef1f5] p-5 shadow-[6px_6px_12px_#d1d4d8,-6px_-6px_12px_#ffffff] transition hover:-translate-y-0.5"
-                >
-                  <h3 className="text-lg font-semibold">{article.title}</h3>
-                  <p className="mt-1 line-clamp-3 text-sm text-slate-600">
-                    {article.description ?? "No description yet."}
-                  </p>
-                  <div className="mt-4 text-sm text-slate-500">
-                    <p>Source: {article.source ?? "unknown"}</p>
-                    <p>
-                      Rating: {article.averageRating ? article.averageRating.toFixed(1) : "-"} / 5 (
-                      {article.reviewCount} reviews)
-                    </p>
-                  </div>
-                  <a
-                    href={article.url}
-                    className="mt-4 inline-block text-sm font-medium text-blue-700 underline"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Open article
-                  </a>
-                </article>
-              );
-            })}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "1rem" }}>
+          <div
+            style={{
+              border: "3px solid var(--yellow)",
+              padding: "1rem 1.5rem",
+              textAlign: "right",
+            }}
+          >
+            <span
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 900,
+                fontSize: "2.5rem",
+                lineHeight: 1,
+                display: "block",
+              }}
+            >
+              {articles.length}
+            </span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.7rem", opacity: 0.7 }}>
+              ARTICLES INDEXED
+            </span>
           </div>
-          {articles.length === 0 ? (
-            <p className="text-sm text-slate-600">No articles yet. Add your first one above.</p>
-          ) : null}
-        </section>
-      </main>
+          <Link
+            href="/add-article"
+            style={{
+              fontFamily: "var(--font-display)",
+              fontWeight: 700,
+              fontSize: "0.85rem",
+              background: "var(--yellow)",
+              color: "var(--black)",
+              padding: "0.875rem 1.5rem",
+              textDecoration: "none",
+              display: "inline-block",
+              boxShadow: "4px 4px 0 var(--yellow)",
+              border: "3px solid var(--yellow)",
+              transition: "transform 0.1s, box-shadow 0.1s",
+            }}
+          >
+            + ADD ARTICLE
+          </Link>
+        </div>
+      </div>
+
+      {/* Feed */}
+      <div style={{ padding: "2rem" }}>
+        {articles.length === 0 ? (
+          <div
+            style={{
+              border: "var(--border)",
+              padding: "4rem 2rem",
+              textAlign: "center",
+              background: "var(--white)",
+            }}
+          >
+            <p
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 700,
+                fontSize: "1.25rem",
+                marginBottom: "0.5rem",
+              }}
+            >
+              NO ARTICLES YET
+            </p>
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.8rem", opacity: 0.6 }}>
+              Be the first to add one →{" "}
+              <Link href="/add-article" style={{ color: "var(--blue)" }}>
+                ADD ARTICLE
+              </Link>
+            </p>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
+              gap: "0",
+              border: "var(--border)",
+            }}
+          >
+            {articles.map((article, i) => (
+              <ArticleCard key={article.id} article={article} index={i} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
