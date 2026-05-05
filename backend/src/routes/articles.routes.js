@@ -110,7 +110,7 @@ function articlesRouter(authMiddleware, options = {}) {
     }
   });
 
-  router.post("/", async (req, res, next) => {
+  router.post("/", protect, async (req, res, next) => {
     try {
       const { url, title, description, image } = req.body;
       if (!url) {
@@ -133,6 +133,7 @@ function articlesRouter(authMiddleware, options = {}) {
           description: description?.trim() ?? null,
           image: image?.trim() ?? null,
           source: source ?? null,
+          createdBy: req.auth.userId,
           createdAt: new Date().toISOString(),
           reviewCount: 0,
           averageRating: null,
@@ -152,6 +153,7 @@ function articlesRouter(authMiddleware, options = {}) {
         description: description?.trim(),
         image: image?.trim(),
         source,
+        createdBy: req.auth.userId,
       });
 
       return res.status(201).json({
@@ -180,19 +182,18 @@ function articlesRouter(authMiddleware, options = {}) {
       }
 
       const { title, description, image } = req.body;
-      const updated = await Article.findByIdAndUpdate(
-        req.params.id,
-        {
-          ...(title ? { title: String(title).trim() } : {}),
-          ...(description !== undefined ? { description: String(description).trim() } : {}),
-          ...(image !== undefined ? { image: String(image).trim() } : {}),
-        },
-        { new: true },
-      );
-
-      if (!updated) {
+      const article = await Article.findById(req.params.id);
+      if (!article) {
         return res.status(404).json({ error: "article not found" });
       }
+      if (article.createdBy && String(article.createdBy) !== req.auth.userId) {
+        return res.status(403).json({ error: "not allowed to update this article" });
+      }
+
+      if (title !== undefined) article.title = String(title).trim();
+      if (description !== undefined) article.description = String(description).trim();
+      if (image !== undefined) article.image = String(image).trim();
+      const updated = await article.save();
 
       const statsById = await buildStatsByArticleId([updated._id]);
       return res.json(mapArticleWithStats(updated, statsById));
@@ -207,10 +208,15 @@ function articlesRouter(authMiddleware, options = {}) {
         return res.status(400).json({ error: "invalid article id" });
       }
 
-      const deleted = await Article.findByIdAndDelete(req.params.id);
-      if (!deleted) {
+      const article = await Article.findById(req.params.id);
+      if (!article) {
         return res.status(404).json({ error: "article not found" });
       }
+      if (article.createdBy && String(article.createdBy) !== req.auth.userId) {
+        return res.status(403).json({ error: "not allowed to delete this article" });
+      }
+
+      await Article.findByIdAndDelete(req.params.id);
 
       await Review.deleteMany({ articleId: req.params.id });
       return res.status(204).send();

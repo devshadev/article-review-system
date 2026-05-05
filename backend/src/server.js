@@ -19,7 +19,12 @@ app.use(cors({ origin: env.corsOrigin === "*" ? true : env.corsOrigin }));
 app.use(express.json());
 
 app.use("/api/health", healthRouter);
-app.use("/api/auth", authRouter(env.jwtSecret));
+app.use(
+  "/api/auth",
+  authRouter(env.jwtSecret, {
+    isDbReady: () => dbReady,
+  }),
+);
 app.use(
   "/api/articles",
   articlesRouter(authRequired(env.jwtSecret), {

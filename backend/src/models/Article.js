@@ -7,6 +7,7 @@ const articleSchema = new mongoose.Schema(
     url: { type: String, required: true, unique: true, trim: true },
     image: { type: String, trim: true },
     source: { type: String, trim: true },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
   {
     timestamps: { createdAt: true, updatedAt: false },
